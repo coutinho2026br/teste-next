@@ -31,6 +31,7 @@ $('#em').innerHTML=EMB;
 let S={prods:{},mesas:{},vendas:[],bol:[],pin:''},PED=[],DB=null,pc={},ok=false,pf={nome:'',tel:'',ent:'Entrega',end:'',pg:'Pix',obs:''},V=M?'cliente':P?'pedir':'caixa',cart=[],mesa='',own=false,ref=null,msg='',pend='';
 function init(d){if(d)S=Object.assign({prods:{},mesas:{},vendas:[],bol:[],pin:''},d);draw()}
 async function save(){try{if(ref)await ref.set(S);else localStorage.setItem('nx',JSON.stringify(S))}catch(e){msg='Não foi possível salvar';draw()}}
+setTimeout(draw,0);
 (async()=>{let c=null;try{c=await claude.use('db')}catch(e){}
 if(c){DB=c;ref=c.doc('app/state');if(!M&&!P)c.collection('pedidos').onSnapshot(q=>{PED=q.docs.map(d=>d.data());draw()},()=>{});ref.onSnapshot(s=>{if(s.exists)init(s.data());else draw()},()=>draw())}
 else{try{init(JSON.parse(localStorage.getItem('nx')))}catch(e){draw()}}})();
@@ -66,7 +67,7 @@ function cliente(){return `<div class=card><h2>Mesa ${M}</h2>${(S.mesas[M]||[]).
 function lg(){const w=$('#pw').value;if(!w)return;if(!S.pin){S.pin=w;save()}own=w==S.pin;if(!own)msg='Senha incorreta';draw()}
 function ab(){if(!$('#bd').value||!$('#bv').value)return;S.bol.push({d:$('#bd').value,val:+$('#bv').value,v:$('#bt').value,pago:false});save();draw()}
 function qr(){const n=$('#qn').value;if(!n)return;const e=$('#qc');e.style.display='block';e.innerHTML='<div style="color:#000;font-weight:700">Mesa '+n+'</div>';new QRCode(e,location.href.split('#')[0]+'#mesa-'+n)}
-const PL=()=>DB?PED:(S.ped||[]),np=()=>PL().filter(o=>o.st=='novo').length,tp=o=>o.it.reduce((a,i)=>a+i.p*i.q,0);
+function PL(){return DB?PED:(S.ped||[])}function np(){return PL().filter(o=>o.st=='novo').length}function tp(o){return o.it.reduce((a,i)=>a+i.p*i.q,0)}
 function pedidos(){const L=PL().slice().sort((a,b)=>b.id-a.id);
 return `<div class="card full"><small>Link para o cliente pedir: <b>${E(location.href.split('#')[0])}#pedidos</b></small></div>`+(L.map(o=>`<div class=card><b>${E(o.nome)}</b> · ${E(o.tel)} <small>${o.st}</small><div>${o.ent}${o.end?': '+E(o.end):''} · ${o.pg}</div>${o.it.map(i=>`<div>${i.q}× ${E(i.n)}</div>`).join('')}${o.obs?`<div><small>${E(o.obs)}</small></div>`:''}<div class=tot style="font-size:22px">${R(tp(o))}</div>${o.st=='novo'?`<button class=g onclick="po(${o.id},'entregue')">Entregue (lançar venda)</button> <button onclick="po(${o.id},'cancelado')">Cancelar</button>`:''}</div>`).join('')||'<p class=card>Nenhum pedido ainda</p>')}
 function po(id,st){const o=PL().find(x=>x.id==id);if(!o)return;o.st=st;
