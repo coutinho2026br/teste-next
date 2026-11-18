@@ -31,10 +31,6 @@ $('#em').innerHTML=EMB;
 let S={prods:{},mesas:{},vendas:[],bol:[],pin:''},PED=[],DB=null,pc={},ok=false,pf={nome:'',tel:'',ent:'Entrega',end:'',pg:'Pix',obs:''},V=M?'cliente':P?'pedir':'caixa',cart=[],mesa='',own=false,ref=null,msg='',pend='';
 function init(d){if(d)S=Object.assign({prods:{},mesas:{},vendas:[],bol:[],pin:''},d);draw()}
 async function save(){try{if(ref)await ref.set(S);else localStorage.setItem('nx',JSON.stringify(S))}catch(e){msg='Não foi possível salvar';draw()}}
-setTimeout(draw,0);
-(async()=>{let c=null;try{c=await claude.use('db')}catch(e){}
-if(c){DB=c;ref=c.doc('app/state');if(!M&&!P)c.collection('pedidos').onSnapshot(q=>{PED=q.docs.map(d=>d.data());draw()},()=>{});ref.onSnapshot(s=>{if(s.exists)init(s.data());else draw()},()=>draw())}
-else{try{init(JSON.parse(localStorage.getItem('nx')))}catch(e){draw()}}})();
 const tm=n=>(S.mesas[n]||[]).reduce((a,i)=>a+i.p*i.q,0),ct=()=>cart.reduce((a,c)=>a+c.p*c.q,0);
 function draw(){const n=$('#nav'),m=$('#m');
 if(M||P){n.innerHTML='';m.innerHTML=M?cliente():pedir();return}
@@ -114,4 +110,8 @@ return `<div class=card><b>Nota de compra (foto)</b><div class=row><input id=nf 
 ${t.length?`<table>${t.map((x,i)=>`<tr><td><input type=checkbox ${x.on?'checked':''} ${x.c?'':'disabled'} onchange="NT.it[${i}].on=this.checked"></td><td>${E(x.n)}<br><small>${x.c?x.q+' un · custo '+R(x.cu)+' · atual '+R(S.prods[x.c].p):'não encontrado no cadastro: cadastre em Produtos'}</small></td><td>${x.c?`<input type=number step=.01 value="${x.pv}" style="width:90px" onchange="NT.it[${i}].pv=+this.value">`:''}</td></tr>`).join('')}</table><label><input type=checkbox ${NT.est?'checked':''} onchange="NT.est=this.checked"> Dar entrada no estoque também</label><div class=row><button class=g onclick="ap()">Aplicar preços</button></div>`:''}</div>`}
 function per(){const d=t=>new Date(t).toLocaleDateString('sv'),b=PR.b||d(Date.now()),a=PR.a||d(Date.now()-6*864e5),s=S.vendas.filter(v=>d(v.t)>=a&&d(v.t)<=b).reduce((x,v)=>x+v.v,0);
 return `<div class=card><b>Faturamento por período</b><div class=row><input type=date value="${a}" onchange="PR.a=this.value;draw()"><input type=date value="${b}" onchange="PR.b=this.value;draw()"></div><div class=tot>${R(s)}</div></div>`}
+setTimeout(draw,0);
+(async()=>{let c=null;try{c=await claude.use('db')}catch(e){}
+if(c){DB=c;ref=c.doc('app/state');if(!M&&!P)c.collection('pedidos').onSnapshot(q=>{PED=q.docs.map(d=>d.data());draw()},()=>{});ref.onSnapshot(s=>{if(s.exists)init(s.data());else draw()},()=>draw())}
+else{try{init(JSON.parse(localStorage.getItem('nx')))}catch(e){draw()}}})();
 </script></body></html>
